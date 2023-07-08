@@ -197,7 +197,7 @@ jobs:
           replacesArtifacts: true
           tag: ${{ env.TOOLCHAIN_TAG }}
           commit: ${{ env.CURRENT_BRANCH }}
-          token: ${{ secrets.HELMIWRT_RW }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           artifacts: output/*
 
   Build:
@@ -319,26 +319,7 @@ jobs:
           cat $UNIVERSAL_CONFIG_FILE >> $OPENWRT_ROOT_PATH/.config
           export SOURCE_BRANCH=$SOURCE_BRANCH
           echo "SOURCE_BRANCH=$SOURCE_BRANCH" >> $GITHUB_ENV
-
-      - name: Load HelmiWrt Mods
-        id: mods
-        run: |
-          cd $OPENWRT_ROOT_PATH
-          git config --global credential.helper store
-          git clone https://$GITHUB_REPOSITORY_OWNER:${{ secrets.HELMIWRT_RW }}@github.com/$GITHUB_REPOSITORY_OWNER/HelmiWrt-Plus.git filex
-          cp -r filex/files/* package/base-files/files/
-          cp -r filex/scripts/* $GITHUB_WORKSPACE/scripts/
-          export UP_USERNEW=$( grep new_user filex/up_info.txt | sed 's/new_user=//g' )
-          echo "UP_USERNEW=$UP_USERNEW" >> $GITHUB_ENV
-          export UP_NEW=$( grep new_repo filex/up_info.txt | sed 's/new_repo=//g' )
-          echo "UP_NEW=$UP_NEW" >> $GITHUB_ENV
-          rm -rf filex
-          sed -i -e 's/\r$//' $(grep -rli "/bin/bash" "package/base-files/files/bin" "$GITHUB_WORKSPACE/scripts")
-          chmod +x package/base-files/files/bin/*
-          chmod +x $GITHUB_WORKSPACE/scripts/*
-          echo -e "this is immortalwrt base build" > package/base-files/files/bin/is_immortalwrt_based
-          echo -e "this is $SOURCE_BRANCH build" > package/base-files/files/bin/is-$SOURCE_BRANCH-build
-
+          
       - name: Load Scripts
         run: |
           cd $OPENWRT_ROOT_PATH
@@ -449,5 +430,5 @@ jobs:
           tag: helmiwrt-${{ env.BUILD_DATE }}
           bodyFile: release_body.txt
           commit: ${{ env.CURRENT_BRANCH }}
-          token: ${{ secrets.HELMIWRT_RW }}
+          token: ${{ secrets.GITHUB_TOKEN}}
           artifacts: ${{ env.OPENWRT_ROOT_PATH }}/bin/targets/${{ env.DEVICE_TARGET }}/${{ env.DEVICE_SUBTARGET }}/*
